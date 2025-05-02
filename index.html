@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Advanced JSON Generator</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Advanced JSON Generator</h1>
+        <p>Create complex, nested JSON structures with random data</p>
+      </header>
+
+      <main>
+        <section class="control-panel">
+          <div class="total-entries">
+            <label for="totalEntries">Total JSON Entries:</label>
+            <input type="number" id="totalEntries" min="1" value="3" />
+            <button id="generateBtn" class="btn primary">Generate JSON</button>
+            <button id="downloadBtn" class="btn secondary" disabled>
+              Download JSON
+            </button>
+          </div>
+
+          <div class="structure-panel">
+            <div class="structure-header">
+              <h2>JSON Structure</h2>
+              <button id="addFieldBtn" class="btn small">+ Add Field</button>
+            </div>
+            <div id="structureTree" class="structure-tree">
+              <!-- Structure tree will be rendered here -->
+            </div>
+          </div>
+        </section>
+
+        <section class="preview-panel">
+          <h2>JSON Preview</h2>
+          <pre id="jsonOutput" class="json-preview"></pre>
+        </section>
+      </main>
+
+      <!-- Field Modal -->
+      <div id="fieldModal" class="modal">
+        <div class="modal-content">
+          <span class="close-modal">&times;</span>
+          <h2 id="modalTitle">Add New Field</h2>
+
+          <form id="fieldForm">
+            <input type="hidden" id="parentPath" value="" />
+            <input type="hidden" id="editingField" value="" />
+
+            <div class="form-group">
+              <label for="fieldName">Field Name:</label>
+              <input
+                type="text"
+                id="fieldName"
+                placeholder="e.g. name, price, details"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="fieldType">Field Type:</label>
+              <select id="fieldType">
+                <option value="string">String</option>
+                <option value="number">Number</option>
+                <option value="boolean">Boolean</option>
+                <option value="array">Array</option>
+                <option value="object">Object</option>
+                <option value="array-object">Array of Objects</option>
+              </select>
+            </div>
+
+            <div id="valueOptions" class="form-group">
+              <label for="fieldValues"
+                >Possible Values (comma separated):</label
+              >
+              <textarea
+                id="fieldValues"
+                placeholder="e.g. John, Jane, Bob, Alice"
+              ></textarea>
+            </div>
+
+            <div id="numberOptions" class="form-group hidden">
+              <div class="number-range">
+                <div>
+                  <label for="minValue">Min Value:</label>
+                  <input type="number" id="minValue" value="0" />
+                </div>
+                <div>
+                  <label for="maxValue">Max Value:</label>
+                  <input type="number" id="maxValue" value="100" />
+                </div>
+                <div>
+                  <label for="decimalPlaces">Decimal Places:</label>
+                  <input
+                    type="number"
+                    id="decimalPlaces"
+                    min="0"
+                    max="10"
+                    value="0"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div id="booleanOptions" class="form-group hidden">
+              <label>Probability of True:</label>
+              <input type="range" id="boolProb" min="0" max="100" value="50" />
+              <span id="boolProbValue">50%</span>
+            </div>
+
+            <div id="arrayOptions" class="form-group hidden">
+              <div class="array-options">
+                <div>
+                  <label for="minItems">Min Items:</label>
+                  <input type="number" id="minItems" min="0" value="1" />
+                </div>
+                <div>
+                  <label for="maxItems">Max Items:</label>
+                  <input type="number" id="maxItems" min="1" value="5" />
+                </div>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn primary">Save Field</button>
+              <button type="button" id="cancelBtn" class="btn secondary">
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <footer>
+        <p>
+          Advanced JSON Generator - Create complex, nested JSON structures with
+          random data
+        </p>
+      </footer>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
