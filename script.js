@@ -33,8 +33,14 @@ document.addEventListener("DOMContentLoaded", () => {
   // Data structure to hold the JSON schema
   let jsonSchema = {};
 
+  // Map to store the order of fields
+  const fieldOrder = new Map();
+
   // Generated JSON data
   let generatedJSON = null;
+
+  // Sortable instances
+  const sortableInstances = new Map();
 
   // Event Listeners
   addFieldBtn.addEventListener("click", () => openAddFieldModal(""));
@@ -149,9 +155,101 @@ document.addEventListener("DOMContentLoaded", () => {
           },
         },
       },
+      location: {
+        type: "object",
+        children: {
+          address: {
+            type: "string",
+            values: [
+              "18 Yakubu Gowon Avenue, Wuse II",
+              "25 Adetokunbo Ademola Crescent, Victoria Island",
+              "7 Broad Street, Lagos Island",
+              "12 Kofo Abayomi Street, Victoria Island",
+              "5 Akin Adesola Street, Victoria Island",
+            ],
+          },
+          city: {
+            type: "string",
+            values: [
+              "Lagos",
+              "Abuja",
+              "Port Harcourt",
+              "Kano",
+              "Owerri",
+              "Calabar",
+            ],
+          },
+          state: {
+            type: "string",
+            values: ["Lagos", "FCT", "Rivers", "Kano", "Imo", "Cross River"],
+          },
+          coordinates: {
+            type: "object",
+            children: {
+              lat: {
+                type: "number",
+                min: 4.5,
+                max: 13.5,
+                decimals: 7,
+              },
+              lng: {
+                type: "number",
+                min: 2.5,
+                max: 14.5,
+                decimals: 7,
+              },
+              accuracy: {
+                type: "string",
+                values: ["high", "medium", "low"],
+              },
+            },
+          },
+        },
+      },
     };
 
+    // Initialize field order
+    initializeFieldOrder();
+
     renderJsonStructure();
+  }
+
+  // Function to initialize field order
+  function initializeFieldOrder() {
+    fieldOrder.clear();
+
+    // Set order for root fields
+    const rootOrder = Object.keys(jsonSchema);
+    fieldOrder.set("", rootOrder);
+
+    // Set order for nested fields
+    for (const fieldName in jsonSchema) {
+      const fieldData = jsonSchema[fieldName];
+      if (
+        (fieldData.type === "object" || fieldData.type === "array-object") &&
+        fieldData.children
+      ) {
+        initializeNestedFieldOrder(fieldName, fieldData.children);
+      }
+    }
+  }
+
+  // Function to initialize nested field order
+  function initializeNestedFieldOrder(parentPath, children) {
+    const childOrder = Object.keys(children);
+    fieldOrder.set(parentPath, childOrder);
+
+    for (const childName in children) {
+      const childData = children[childName];
+      const fullPath = `${parentPath}.${childName}`;
+
+      if (
+        (childData.type === "object" || childData.type === "array-object") &&
+        childData.children
+      ) {
+        initializeNestedFieldOrder(fullPath, childData.children);
+      }
+    }
   }
 
   // Function to open the add field modal
@@ -265,6 +363,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const parentPath = parentPathInput.value;
     const fieldName = fieldNameInput.value.trim();
     const fieldType = fieldTypeSelect.value;
+    const editingField = editingFieldInput.value;
 
     // Validate field name
     if (!fieldName) {
@@ -301,7 +400,19 @@ document.addEventListener("DOMContentLoaded", () => {
         break;
       case "object":
       case "array-object":
-        fieldData.children = {};
+        // If we're editing an existing field, preserve its children
+        if (editingField && editingField === fieldName) {
+          const existingField = getFieldByPath(
+            `${parentPath}${parentPath ? "." : ""}${editingField}`
+          );
+          if (existingField && existingField.children) {
+            fieldData.children = existingField.children;
+          } else {
+            fieldData.children = {};
+          }
+        } else {
+          fieldData.children = {};
+        }
         break;
     }
 
@@ -311,18 +422,19 @@ document.addEventListener("DOMContentLoaded", () => {
       fieldData.maxItems = Number.parseInt(maxItemsInput.value) || 5;
     }
 
-    // Save field to schema
-    const editingField = editingFieldInput.value;
-
-    if (editingField && editingField !== fieldName) {
-      // Field name has changed, remove old field
-      removeFieldFromSchema(
-        `${parentPath}${parentPath ? "." : ""}${editingField}`
-      );
+    // Update field in schema
+    if (editingField) {
+      if (editingField !== fieldName) {
+        // Field name has changed
+        updateFieldName(parentPath, editingField, fieldName, fieldData);
+      } else {
+        // Just update the field data
+        updateFieldData(parentPath, fieldName, fieldData);
+      }
+    } else {
+      // Add new field
+      addFieldToSchema(parentPath, fieldName, fieldData);
     }
-
-    // Add new field to schema
-    addFieldToSchema(parentPath, fieldName, fieldData);
 
     // Close modal
     closeFieldModal();
@@ -331,11 +443,120 @@ document.addEventListener("DOMContentLoaded", () => {
     renderJsonStructure();
   }
 
+  // Function to update field name
+  function updateFieldName(parentPath, oldName, newName, fieldData) {
+    // Get the parent object
+    let parent;
+    if (!parentPath) {
+      parent = jsonSchema;
+    } else {
+      const pathParts = parentPath.split(".");
+      parent = getNestedObject(jsonSchema, pathParts);
+    }
+
+    if (!parent) return;
+
+    // Create new field with new name
+    parent[newName] = fieldData;
+
+    // Delete old field
+    delete parent[oldName];
+
+    // Update field order
+    updateFieldOrderAfterRename(parentPath, oldName, newName);
+  }
+
+  // Function to update field order after rename
+  function updateFieldOrderAfterRename(parentPath, oldName, newName) {
+    const orderKey = parentPath || "";
+    const order = fieldOrder.get(orderKey) || [];
+
+    const index = order.indexOf(oldName);
+    if (index !== -1) {
+      order[index] = newName;
+      fieldOrder.set(orderKey, order);
+    }
+
+    // Update any child paths in the fieldOrder map
+    if (parentPath) {
+      const oldPath = `${parentPath}.${oldName}`;
+      const newPath = `${parentPath}.${newName}`;
+
+      // Find all keys that start with oldPath and update them
+      for (const [key, value] of fieldOrder.entries()) {
+        if (key === oldPath || key.startsWith(`${oldPath}.`)) {
+          const newKey = key.replace(oldPath, newPath);
+          fieldOrder.set(newKey, value);
+          fieldOrder.delete(key);
+        }
+      }
+    } else {
+      // Root level rename
+      const oldPath = oldName;
+      const newPath = newName;
+
+      // Find all keys that start with oldPath and update them
+      for (const [key, value] of fieldOrder.entries()) {
+        if (key === oldPath || key.startsWith(`${oldPath}.`)) {
+          const newKey = key.replace(oldPath, newPath);
+          fieldOrder.set(newKey, value);
+          fieldOrder.delete(key);
+        }
+      }
+    }
+  }
+
+  // Function to update field data
+  function updateFieldData(parentPath, fieldName, fieldData) {
+    // Get the parent object
+    let parent;
+    if (!parentPath) {
+      parent = jsonSchema;
+    } else {
+      const pathParts = parentPath.split(".");
+      parent = getNestedObject(jsonSchema, pathParts);
+    }
+
+    if (!parent) return;
+
+    // Preserve children if they exist
+    if (
+      parent[fieldName] &&
+      parent[fieldName].children &&
+      fieldData.type === parent[fieldName].type
+    ) {
+      fieldData.children = parent[fieldName].children;
+    }
+
+    // Update field
+    parent[fieldName] = fieldData;
+  }
+
+  // Helper function to get a nested object by path
+  function getNestedObject(obj, pathParts) {
+    let current = obj;
+
+    for (const part of pathParts) {
+      if (current[part] && current[part].children) {
+        current = current[part].children;
+      } else {
+        return null;
+      }
+    }
+
+    return current;
+  }
+
   // Function to add field to schema
   function addFieldToSchema(parentPath, fieldName, fieldData) {
     if (!parentPath) {
       // Add to root
       jsonSchema[fieldName] = fieldData;
+
+      // Update field order
+      const rootOrder = fieldOrder.get("") || [];
+      rootOrder.push(fieldName);
+      fieldOrder.set("", rootOrder);
     } else {
       // Add to nested path
       const pathParts = parentPath.split(".");
@@ -352,6 +573,11 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       current[fieldName] = fieldData;
+
+      // Update field order
+      const parentOrder = fieldOrder.get(parentPath) || [];
+      parentOrder.push(fieldName);
+      fieldOrder.set(parentPath, parentOrder);
     }
   }
 
@@ -359,17 +585,39 @@ document.addEventListener("DOMContentLoaded", () => {
   function removeFieldFromSchema(path) {
     const pathParts = path.split(".");
     const fieldName = pathParts.pop();
+    const parentPath = pathParts.join(".");
 
     if (pathParts.length === 0) {
       // Remove from root
       delete jsonSchema[fieldName];
+
+      // Update field order
+      const rootOrder = fieldOrder.get("") || [];
+      const index = rootOrder.indexOf(fieldName);
+      if (index !== -1) {
+        rootOrder.splice(index, 1);
+      }
     } else {
       // Remove from nested path
-      const parentPath = pathParts.join(".");
       const parent = getFieldByPath(parentPath);
 
       if (parent && parent.children) {
         delete parent.children[fieldName];
+
+        // Update field order
+        const parentOrder = fieldOrder.get(parentPath) || [];
+        const index = parentOrder.indexOf(fieldName);
+        if (index !== -1) {
+          parentOrder.splice(index, 1);
+        }
+      }
+    }
+
+    // Remove any child field orders
+    const fullPath = path;
+    for (const key of [...fieldOrder.keys()]) {
+      if (key === fullPath || key.startsWith(`${fullPath}.`)) {
+        fieldOrder.delete(key);
       }
     }
   }
@@ -403,20 +651,51 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderJsonStructure() {
     structureTree.innerHTML = "";
 
-    // Render root fields
-    for (const fieldName in jsonSchema) {
-      const fieldData = jsonSchema[fieldName];
-      renderField(structureTree, fieldName, fieldData, "");
+    // Clean up any existing sortable instances
+    sortableInstances.forEach((instance) => {
+      instance.destroy();
+    });
+    sortableInstances.clear();
+
+    // Get the root field order
+    const rootOrder = fieldOrder.get("") || Object.keys(jsonSchema);
+
+    // Create container for root fields
+    const rootContainer = document.createElement("div");
+    rootContainer.className = "root-container";
+    structureTree.appendChild(rootContainer);
+
+    // Render root fields in order
+    for (const fieldName of rootOrder) {
+      if (jsonSchema[fieldName]) {
+        renderField(rootContainer, fieldName, jsonSchema[fieldName], "");
+      }
     }
+
+    // Initialize sortable for root container
+    initSortable(rootContainer, "");
   }
 
   // Function to render a field
   function renderField(container, fieldName, fieldData, parentPath) {
     const fieldItem = document.createElement("div");
     fieldItem.className = "tree-item";
+    fieldItem.dataset.fieldName = fieldName;
 
     const fieldHeader = document.createElement("div");
     fieldHeader.className = "tree-item-header";
+
+    // Add drag handle
+    const dragHandle = document.createElement("div");
+    dragHandle.className = "tree-item-drag-handle";
+    dragHandle.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="8" y1="6" x2="21" y2="6"></line>
+        <line x1="8" y1="12" x2="21" y2="12"></line>
+        <line x1="8" y1="18" x2="21" y2="18"></line>
+        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+      </svg>`;
 
     const fieldNameSpan = document.createElement("span");
     fieldNameSpan.className = "tree-item-name";
@@ -431,8 +710,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Edit button
     const editBtn = document.createElement("button");
-    editBtn.className = "btn icon";
-    editBtn.innerHTML = "✏️";
+    editBtn.className = "btn icon outline";
+    editBtn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+      </svg>`;
     editBtn.title = "Edit field";
     editBtn.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -442,7 +724,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // Delete button
     const deleteBtn = document.createElement("button");
     deleteBtn.className = "btn icon danger";
-    deleteBtn.innerHTML = "🗑️";
+    deleteBtn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="3 6 5 6 21 6"></polyline>
+        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+      </svg>`;
     deleteBtn.title = "Delete field";
     deleteBtn.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -459,6 +744,7 @@ document.addEventListener("DOMContentLoaded", () => {
     actionsDiv.appendChild(editBtn);
     actionsDiv.appendChild(deleteBtn);
 
+    fieldHeader.appendChild(dragHandle);
     fieldHeader.appendChild(fieldTypeSpan);
     fieldHeader.appendChild(fieldNameSpan);
     fieldHeader.appendChild(actionsDiv);
@@ -475,29 +761,93 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Add button to add child field
       const addChildBtn = document.createElement("button");
-      addChildBtn.className = "btn small";
-      addChildBtn.textContent = "+ Add Child Field";
+      addChildBtn.className = "btn small outline";
+      addChildBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg> Add Child Field`;
       addChildBtn.addEventListener("click", () => {
         openAddFieldModal(`${parentPath}${parentPath ? "." : ""}${fieldName}`);
       });
 
       childrenContainer.appendChild(addChildBtn);
 
-      // Render child fields
+      // Create container for child fields
+      const childFieldsContainer = document.createElement("div");
+      childFieldsContainer.className = "child-fields-container";
+      childrenContainer.appendChild(childFieldsContainer);
+
+      // Render child fields in order
       const fullPath = `${parentPath}${parentPath ? "." : ""}${fieldName}`;
-      for (const childName in fieldData.children) {
-        renderField(
-          childrenContainer,
-          childName,
-          fieldData.children[childName],
-          fullPath
-        );
+      const childOrder =
+        fieldOrder.get(fullPath) || Object.keys(fieldData.children);
+
+      for (const childName of childOrder) {
+        if (fieldData.children[childName]) {
+          renderField(
+            childFieldsContainer,
+            childName,
+            fieldData.children[childName],
+            fullPath
+          );
+        }
       }
 
       fieldItem.appendChild(childrenContainer);
+
+      // Initialize sortable for child container
+      initSortable(childFieldsContainer, fullPath);
     }
 
     container.appendChild(fieldItem);
+  }
+
+  // Function to initialize Sortable
+  function initSortable(container, path) {
+    // Assuming Sortable is available globally or imported elsewhere
+    const sortable = new Sortable(container, {
+      group: `sortable-${path}`,
+      animation: 150,
+      handle: ".tree-item-drag-handle",
+      ghostClass: "sortable-ghost",
+      chosenClass: "sortable-chosen",
+      dragClass: "sortable-drag",
+      onEnd: (evt) => {
+        // Update the field order after drag
+        const items = Array.from(container.children).map(
+          (item) => item.dataset.fieldName
+        );
+        fieldOrder.set(path, items);
+
+        // If this is a root level reordering, we need to reorder the jsonSchema
+        if (path === "") {
+          const newSchema = {};
+          for (const fieldName of items) {
+            if (jsonSchema[fieldName]) {
+              newSchema[fieldName] = jsonSchema[fieldName];
+            }
+          }
+          jsonSchema = newSchema;
+        } else {
+          // For nested fields, we need to reorder the children
+          const parent = getFieldByPath(path);
+          if (parent && parent.children) {
+            const newChildren = {};
+            for (const fieldName of items) {
+              if (parent.children[fieldName]) {
+                newChildren[fieldName] = parent.children[fieldName];
+              }
+            }
+            parent.children = newChildren;
+          }
+        }
+      },
+    });
+
+    // Store the sortable instance for cleanup
+    sortableInstances.set(path, sortable);
+
+    return sortable;
   }
 
   // Function to generate JSON
@@ -517,19 +867,46 @@ document.addEventListener("DOMContentLoaded", () => {
       result.push(entry);
     }
 
-    // Store and display the generated JSON
+    // Store the generated JSON
     generatedJSON = result;
-    jsonOutput.textContent = JSON.stringify(result, null, 2);
+
+    // Format JSON with syntax highlighting
+    const jsonString = JSON.stringify(result, null, 2);
+    const highlightedJson = syntaxHighlight(jsonString);
+
+    // Use innerHTML to properly render the HTML tags
+    jsonOutput.innerHTML = highlightedJson;
     downloadBtn.disabled = false;
+  }
+
+  // Helper function for syntax highlighting
+  function syntaxHighlight(json) {
+    // First, escape HTML to prevent XSS
+    const escaped = json
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+
+    return escaped
+      .replace(/"([^"]+)":/g, '<span >"$1"</span>:')
+      .replace(/"([^"]+)"/g, '<span class="json-string">"$1"</span>')
+      .replace(/\b(true|false)\b/g, '<span class="json-boolean">$1</span>')
+      .replace(/\b(null)\b/g, '<span class="json-null">$1</span>')
+      .replace(/\b(\d+(\.\d+)?)\b/g, '<span class="json-number">$1</span>');
   }
 
   // Function to generate a single entry
   function generateEntry(schema) {
     const entry = {};
 
-    for (const fieldName in schema) {
-      const fieldData = schema[fieldName];
-      entry[fieldName] = generateValue(fieldData);
+    // Use field order to maintain the order in the generated JSON
+    const rootOrder = fieldOrder.get("") || Object.keys(schema);
+
+    for (const fieldName of rootOrder) {
+      if (schema[fieldName]) {
+        const fieldData = schema[fieldName];
+        entry[fieldName] = generateValue(fieldData);
+      }
     }
 
     return entry;
@@ -588,8 +965,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const obj = {};
 
         if (fieldData.children) {
-          for (const childName in fieldData.children) {
-            obj[childName] = generateValue(fieldData.children[childName]);
+          // Use field order to maintain the order in the generated JSON
+          const childOrder =
+            fieldOrder.get(fieldData.path) || Object.keys(fieldData.children);
+
+          for (const childName of childOrder) {
+            if (fieldData.children[childName]) {
+              obj[childName] = generateValue(fieldData.children[childName]);
+            }
           }
         }
 
@@ -610,10 +993,16 @@ document.addEventListener("DOMContentLoaded", () => {
           const arrayObj = {};
 
           if (fieldData.children) {
-            for (const childName in fieldData.children) {
-              arrayObj[childName] = generateValue(
-                fieldData.children[childName]
-              );
+            // Use field order to maintain the order in the generated JSON
+            const childOrder =
+              fieldOrder.get(fieldData.path) || Object.keys(fieldData.children);
+
+            for (const childName of childOrder) {
+              if (fieldData.children[childName]) {
+                arrayObj[childName] = generateValue(
+                  fieldData.children[childName]
+                );
+              }
             }
           }
 

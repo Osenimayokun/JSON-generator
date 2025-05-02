@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Examples - JSON Generator</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    />
+  </head>
+  <body>
+    <div class="app-container">
+      <header class="app-header">
+        <div class="header-content">
+          <div class="logo">
+            <svg
+              viewBox="0 0 24 24"
+              width="32"
+              height="32"
+              stroke="currentColor"
+              stroke-width="2"
+              fill="none"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+              ></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            <h1>JSON Generator</h1>
+          </div>
+          <p class="tagline">
+            Create complex, nested JSON structures with random data
+          </p>
+        </div>
+        <nav class="main-nav">
+          <ul>
+            <li><a href="index.html">Generator</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="examples.html" class="active">Examples</a></li>
+            <li><a href="docs.html">Documentation</a></li>
+          </ul>
+        </nav>
+      </header>
+
+      <main class="page-content">
+        <section class="page-section">
+          <h2>Example JSON Structures</h2>
+          <p>
+            Below are examples of common JSON structures you can create with our
+            generator. Click on any example to load it into the generator and
+            customize it for your needs.
+          </p>
+        </section>
+
+        <section class="page-section">
+          <h2>User Profiles</h2>
+          <div class="example-card">
+            <h3>User Profile with Contact Information</h3>
+            <p>
+              A typical user profile structure with personal details, contact
+              information, and preferences.
+            </p>
+            <pre>
+{
+  "users": [
+    {
+      "id": "USR-12345",
+      "name": {
+        "first": "John",
+        "last": "Smith"
+      },
+      "email": "john.smith@example.com",
+      "age": 32,
+      "address": {
+        "street": "123 Main St",
+        "city": "Boston",
+        "state": "MA",
+        "zipCode": "02108",
+        "country": "USA"
+      },
+      "phoneNumbers": [
+        {
+          "type": "home",
+          "number": "555-1234"
+        },
+        {
+          "type": "work",
+          "number": "555-5678"
+        }
+      ],
+      "preferences": {
+        "theme": "dark",
+        "notifications": true,
+        "newsletter": false
+      },
+      "registeredAt": "2023-01-15T08:30:00Z",
+      "lastLogin": "2023-05-20T14:22:10Z"
+    }
+  ]
+}</pre
+            >
+            <a href="index.html?template=user-profile" class="btn outline"
+              >Load This Example</a
+            >
+          </div>
+        </section>
+
+        <section class="page-section">
+          <h2>E-commerce</h2>
+          <div class="example-card">
+            <h3>Product Catalog</h3>
+            <p>
+              A product catalog structure with detailed product information,
+              pricing, and inventory.
+            </p>
+            <pre>
+{
+  "products": [
+    {
+      "id": "PROD-5678",
+      "sku": "WH-PRO-M-BLK",
+      "name": "Wireless Pro Headphones",
+      "description": "Premium wireless headphones with noise cancellation",
+      "brand": "AudioTech",
+      "category": "Electronics",
+      "subcategory": "Audio",
+      "price": {
+        "current": 149.99,
+        "original": 199.99,
+        "currency": "USD",
+        "discountPercentage": 25
+      },
+      "inventory": {
+        "inStock": true,
+        "quantity": 42,
+        "warehouse": "EAST-5"
+      },
+      "specifications": [
+        {
+          "name": "Battery Life",
+          "value": "20 hours"
+        },
+        {
+          "name": "Connectivity",
+          "value": "Bluetooth 5.0"
+        },
+        {
+          "name": "Color",
+          "value": "Black"
+        }
+      ],
+      "ratings": {
+        "average": 4.7,
+        "count": 238,
+        "distribution": [
+          { "stars": 5, "count": 180 },
+          { "stars": 4, "count": 42 },
+          { "stars": 3, "count": 10 },
+          { "stars": 2, "count": 4 },
+          { "stars": 1, "count": 2 }
+        ]
+      },
+      "images": [
+        {
+          "url": "https://example.com/images/headphones-1.jpg",
+          "type": "main"
+        },
+        {
+          "url": "https://example.com/images/headphones-2.jpg",
+          "type": "alternate"
+        }
+      ],
+      "tags": ["wireless", "noise-cancellation", "premium", "audio"]
+    }
+  ]
+}</pre
+            >
+            <a href="index.html?template=product-catalog" class="btn outline"
+              >Load This Example</a
+            >
+          </div>
+
+          <div class="example-card">
+            <h3>Order Details</h3>
+            <p>
+              An order structure with customer information, products, shipping,
+              and payment details.
+            </p>
+            <pre>
+{
+  "order": {
+    "id": "ORD-9876",
+    "date": "2023-05-15T10:30:00Z",
+    "customer": {
+      "id": "CUST-1234",
+      "name": "Jane Doe",
+      "email": "jane.doe@example.com"
+    },
+    "items": [
+      {
+        "productId": "PROD-5678",
+        "name": "Wireless Pro Headphones",
+        "quantity": 1,
+        "unitPrice": 149.99,
+        "totalPrice": 149.99
+      },
+      {
+        "productId": "PROD-8765",
+        "name": "Smartphone Charging Cable",
+        "quantity": 2,
+        "unitPrice": 12.99,
+        "totalPrice": 25.98
+      }
+    ],
+    "shipping": {
+      "method": "Standard",
+      "cost": 5.99,
+      "address": {
+        "street": "456 Oak Avenue",
+        "city": "Portland",
+        "state": "OR",
+        "zipCode": "97205",
+        "country": "USA"
+      },
+      "estimatedDelivery": "2023-05-20"
+    },
+    "payment": {
+      "method": "Credit Card",
+      "cardLast4": "1234",
+      "subtotal": 175.97,
+      "tax": 14.08,
+      "total": 196.04,
+      "currency": "USD",
+      "status": "paid"
+    },
+    "status": "processing"
+  }
+}</pre
+            >
+            <a href="index.html?template=order-details" class="btn outline"
+              >Load This Example</a
+            >
+          </div>
+        </section>
+
+        <section class="page-section">
+          <h2>API Responses</h2>
+          <div class="example-card">
+            <h3>Paginated API Response</h3>
+            <p>
+              A typical paginated API response structure with metadata and
+              results.
+            </p>
+            <pre>
+{
+  "status": "success",
+  "code": 200,
+  "data": {
+    "results": [
+      {
+        "id": 1,
+        "title": "First Item",
+        "description": "Description of the first item"
+      },
+      {
+        "id": 2,
+        "title": "Second Item",
+        "description": "Description of the second item"
+      }
+    ],
+    "pagination": {
+      "currentPage": 1,
+      "totalPages": 5,
+      "totalItems": 42,
+      "itemsPerPage": 10,
+      "hasNextPage": true,
+      "hasPreviousPage": false
+    }
+  },
+  "meta": {
+    "requestId": "req-123456",
+    "timestamp": "2023-05-20T14:22:10Z",
+    "processingTimeMs": 45
+  }
+}</pre
+            >
+            <a href="index.html?template=paginated-api" class="btn outline"
+              >Load This Example</a
+            >
+          </div>
+        </section>
+
+        <section class="cta-section">
+          <h2>Create Your Own JSON Structure</h2>
+          <p>
+            Ready to build your own custom JSON structure? Use our intuitive
+            generator to create exactly what you need.
+          </p>
+          <a href="index.html" class="btn primary">Start Building Now</a>
+        </section>
+      </main>
+
+      <footer class="app-footer">
+        <p>
+          Advanced JSON Generator &copy; 2023 - Create complex, nested JSON
+          structures with random data
+        </p>
+      </footer>
+    </div>
+  </body>
+</html>

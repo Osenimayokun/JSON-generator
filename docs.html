@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Documentation - JSON Generator</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    />
+  </head>
+  <body>
+    <div class="app-container">
+      <header class="app-header">
+        <div class="header-content">
+          <div class="logo">
+            <svg
+              viewBox="0 0 24 24"
+              width="32"
+              height="32"
+              stroke="currentColor"
+              stroke-width="2"
+              fill="none"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+              ></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            <h1>JSON Generator</h1>
+          </div>
+          <p class="tagline">
+            Create complex, nested JSON structures with random data
+          </p>
+        </div>
+        <nav class="main-nav">
+          <ul>
+            <li><a href="index.html">Generator</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="examples.html">Examples</a></li>
+            <li><a href="docs.html" class="active">Documentation</a></li>
+          </ul>
+        </nav>
+      </header>
+
+      <main class="page-content">
+        <section class="page-section">
+          <h2>Documentation</h2>
+          <p>
+            Welcome to the JSON Generator documentation. This guide will help
+            you understand how to use all the features of our tool to create
+            complex JSON structures with random data.
+          </p>
+        </section>
+
+        <section class="page-section">
+          <h2>Getting Started</h2>
+          <h3>Basic Concepts</h3>
+          <p>
+            The JSON Generator allows you to define a schema for your JSON data,
+            which is then used to generate random data that matches your
+            specifications. Here are the key concepts:
+          </p>
+          <ul class="docs-list">
+            <li>
+              <strong>Fields</strong>: The basic building blocks of your JSON
+              structure. Each field has a name and a type.
+            </li>
+            <li>
+              <strong>Types</strong>: Each field can be one of several types:
+              string, number, boolean, array, object, or array of objects.
+            </li>
+            <li>
+              <strong>Constraints</strong>: For each type, you can define
+              constraints like possible values, ranges, probabilities, etc.
+            </li>
+            <li>
+              <strong>Nesting</strong>: You can create complex structures by
+              nesting objects and arrays within each other.
+            </li>
+          </ul>
+        </section>
+
+        <section class="page-section">
+          <h2>Field Types</h2>
+
+          <h3>String Fields</h3>
+          <p>
+            String fields generate text values. You can provide a list of
+            possible values, and the generator will randomly select one for each
+            generated entry.
+          </p>
+          <div class="example-card">
+            <h4>Example: String Field</h4>
+            <pre>
+{
+  "name": "John Smith"  // Randomly selected from your list of names
+}</pre
+            >
+          </div>
+
+          <h3>Number Fields</h3>
+          <p>
+            Number fields generate numeric values. You can specify a minimum and
+            maximum value, as well as the number of decimal places.
+          </p>
+          <div class="example-card">
+            <h4>Example: Number Field</h4>
+            <pre>
+{
+  "price": 149.99  // Random number between your min and max values
+}</pre
+            >
+          </div>
+
+          <h3>Boolean Fields</h3>
+          <p>
+            Boolean fields generate true/false values. You can set the
+            probability of generating a true value.
+          </p>
+          <div class="example-card">
+            <h4>Example: Boolean Field</h4>
+            <pre>
+{
+  "inStock": true  // Based on your specified probability
+}</pre
+            >
+          </div>
+
+          <h3>Array Fields</h3>
+          <p>
+            Array fields generate lists of values. You can specify the possible
+            values and the minimum and maximum number of items in the array.
+          </p>
+          <div class="example-card">
+            <h4>Example: Array Field</h4>
+            <pre>
+{
+  "tags": ["premium", "wireless", "audio"]  // Random selection from your values
+}</pre
+            >
+          </div>
+
+          <h3>Object Fields</h3>
+          <p>
+            Object fields generate nested objects. You can add child fields to
+            objects to create complex structures.
+          </p>
+          <div class="example-card">
+            <h4>Example: Object Field</h4>
+            <pre>
+{
+  "address": {
+    "street": "123 Main St",
+    "city": "Boston",
+    "zipCode": "02108"
+  }
+}</pre
+            >
+          </div>
+
+          <h3>Array of Objects</h3>
+          <p>
+            This special type generates an array containing multiple objects
+            with the same structure. You can specify the minimum and maximum
+            number of objects in the array.
+          </p>
+          <div class="example-card">
+            <h4>Example: Array of Objects</h4>
+            <pre>
+{
+  "phoneNumbers": [
+    {
+      "type": "home",
+      "number": "555-1234"
+    },
+    {
+      "type": "work",
+      "number": "555-5678"
+    }
+  ]
+}</pre
+            >
+          </div>
+        </section>
+
+        <section class="page-section">
+          <h2>Advanced Features</h2>
+
+          <h3>Generating Multiple Entries</h3>
+          <p>
+            You can generate multiple JSON entries at once by setting the "Total
+            JSON Entries" value. This is useful when you need a collection of
+            similar but randomly varied data.
+          </p>
+
+          <h3>Exporting Your Data</h3>
+          <p>
+            Once you've generated your JSON data, you can download it as a .json
+            file for use in your applications. Simply click the "Download JSON"
+            button after generating your data.
+          </p>
+        </section>
+
+        <section class="cta-section">
+          <h2>Ready to Generate Your JSON Data?</h2>
+          <p>
+            Now that you understand how to use the JSON Generator, it's time to
+            create your own custom JSON structures.
+          </p>
+          <a href="index.html" class="btn primary">Start Generating Now</a>
+        </section>
+      </main>
+
+      <footer class="app-footer">
+        <p>
+          Advanced JSON Generator &copy; 2023 - Create complex, nested JSON
+          structures with random data
+        </p>
+      </footer>
+    </div>
+  </body>
+</html>
